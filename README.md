@@ -1,4 +1,3 @@
-# FlowBit
 # FlowBit 🧠⚙️
 
 **FlowBit** is a visual workflow orchestration platform built on top of [LangFlow](https://github.com/logspace-ai/langflow). It allows you to connect, run, and monitor AI-powered agents through a simple UI.

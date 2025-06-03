@@ -1,0 +1,99 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "id": "TextInput-1",
+        "type": "TextInput",
+        "position": { "x": 100, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Text"],
+            "template": {
+              "value": {
+                "display_name": "Text",
+                "value": "",
+                "type": "str"
+              }
+            },
+            "_type": "TextInput"
+          }
+        }
+      },
+      {
+        "id": "PromptTemplate-1",
+        "type": "PromptTemplate",
+        "position": { "x": 300, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["BasePromptTemplate"],
+            "template": {
+              "template": {
+                "display_name": "Template",
+                "value": "You are an email processing agent. Analyze the following email content and provide insights about sentiment, priority, and recommended actions:\n\nEmail: {email_text}\nSender: {sender}\nPriority: {priority}\n\nProvide your analysis in JSON format.",
+                "type": "prompt"
+              }
+            },
+            "_type": "PromptTemplate"
+          }
+        }
+      },
+      {
+        "id": "OpenAI-1",
+        "type": "OpenAI",
+        "position": { "x": 500, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["BaseLanguageModel"],
+            "template": {
+              "model_name": {
+                "display_name": "Model Name",
+                "value": "gpt-3.5-turbo",
+                "type": "str"
+              },
+              "temperature": {
+                "display_name": "Temperature",
+                "value": 0.1,
+                "type": "float"
+              }
+            },
+            "_type": "OpenAI"
+          }
+        }
+      },
+      {
+        "id": "LLMChain-1",
+        "type": "LLMChain",
+        "position": { "x": 700, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Chain"],
+            "template": {},
+            "_type": "LLMChain"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "TextInput-1",
+        "target": "PromptTemplate-1",
+        "sourceHandle": "text_output",
+        "targetHandle": "email_text"
+      },
+      {
+        "source": "PromptTemplate-1",
+        "target": "LLMChain-1",
+        "sourceHandle": "prompt_output",
+        "targetHandle": "prompt"
+      },
+      {
+        "source": "OpenAI-1",
+        "target": "LLMChain-1",
+        "sourceHandle": "llm_output",
+        "targetHandle": "llm"
+      }
+    ]
+  },
+  "description": "Email processing and analysis agent",
+  "name": "Email Agent"
+}

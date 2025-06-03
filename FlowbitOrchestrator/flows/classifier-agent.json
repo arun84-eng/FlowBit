@@ -1,0 +1,123 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "id": "TextInput-1",
+        "type": "TextInput",
+        "position": { "x": 100, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Text"],
+            "template": {
+              "value": {
+                "display_name": "Input Text",
+                "value": "",
+                "type": "str"
+              }
+            },
+            "_type": "TextInput"
+          }
+        }
+      },
+      {
+        "id": "PromptTemplate-1",
+        "type": "PromptTemplate",
+        "position": { "x": 300, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["BasePromptTemplate"],
+            "template": {
+              "template": {
+                "display_name": "Template",
+                "value": "You are an AI classification system. Classify the following text into appropriate categories:\n\nText: {input_text}\n\nClassify according to:\n1. Content Type (email, document, message, etc.)\n2. Sentiment (positive, negative, neutral)\n3. Intent (inquiry, complaint, request, information, etc.)\n4. Priority Level (low, medium, high, urgent)\n5. Language Detection\n6. Topic Categories (business, personal, technical, etc.)\n\nProvide classification results with confidence scores in JSON format:\n{\n  \"content_type\": {\"category\": \"string\", \"confidence\": 0.0-1.0},\n  \"sentiment\": {\"category\": \"string\", \"confidence\": 0.0-1.0},\n  \"intent\": {\"category\": \"string\", \"confidence\": 0.0-1.0},\n  \"priority\": {\"category\": \"string\", \"confidence\": 0.0-1.0},\n  \"language\": {\"code\": \"string\", \"confidence\": 0.0-1.0},\n  \"topics\": [{\"category\": \"string\", \"confidence\": 0.0-1.0}]\n}",
+                "type": "prompt"
+              }
+            },
+            "_type": "PromptTemplate"
+          }
+        }
+      },
+      {
+        "id": "OpenAI-1",
+        "type": "OpenAI",
+        "position": { "x": 500, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["BaseLanguageModel"],
+            "template": {
+              "model_name": {
+                "display_name": "Model Name",
+                "value": "gpt-4",
+                "type": "str"
+              },
+              "temperature": {
+                "display_name": "Temperature",
+                "value": 0.0,
+                "type": "float"
+              }
+            },
+            "_type": "OpenAI"
+          }
+        }
+      },
+      {
+        "id": "LLMChain-1",
+        "type": "LLMChain",
+        "position": { "x": 700, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Chain"],
+            "template": {},
+            "_type": "LLMChain"
+          }
+        }
+      },
+      {
+        "id": "PythonFunction-1",
+        "type": "PythonFunction",
+        "position": { "x": 900, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Data"],
+            "template": {
+              "code": {
+                "display_name": "Post-process",
+                "value": "import json\nfrom datetime import datetime\n\ndef post_process_classification(llm_result: str) -> dict:\n    try:\n        classification = json.loads(llm_result)\n        \n        # Add metadata\n        result = {\n            'classification': classification,\n            'metadata': {\n                'processed_at': datetime.now().isoformat(),\n                'model': 'gpt-4',\n                'version': '1.0.0'\n            },\n            'summary': {\n                'primary_category': max(classification.get('topics', []), key=lambda x: x.get('confidence', 0)).get('category', 'unknown') if classification.get('topics') else 'unknown',\n                'overall_confidence': sum([v.get('confidence', 0) for v in classification.values() if isinstance(v, dict) and 'confidence' in v]) / len([v for v in classification.values() if isinstance(v, dict) and 'confidence' in v]),\n                'recommendations': []\n            }\n        }\n        \n        # Add recommendations based on classification\n        if classification.get('priority', {}).get('category') == 'urgent':\n            result['summary']['recommendations'].append('Immediate attention required')\n        \n        if classification.get('sentiment', {}).get('category') == 'negative':\n            result['summary']['recommendations'].append('Handle with care - negative sentiment detected')\n            \n        return result\n        \n    except Exception as e:\n        return {\n            'error': f'Post-processing failed: {str(e)}',\n            'raw_result': llm_result\n        }",
+                "type": "code"
+              }
+            },
+            "_type": "PythonFunction"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "TextInput-1",
+        "target": "PromptTemplate-1",
+        "sourceHandle": "text_output",
+        "targetHandle": "input_text"
+      },
+      {
+        "source": "PromptTemplate-1",
+        "target": "LLMChain-1",
+        "sourceHandle": "prompt_output",
+        "targetHandle": "prompt"
+      },
+      {
+        "source": "OpenAI-1",
+        "target": "LLMChain-1",
+        "sourceHandle": "llm_output",
+        "targetHandle": "llm"
+      },
+      {
+        "source": "LLMChain-1",
+        "target": "PythonFunction-1",
+        "sourceHandle": "text_output",
+        "targetHandle": "llm_result"
+      }
+    ]
+  },
+  "description": "AI-powered text classification and categorization agent",
+  "name": "Classifier Agent"
+}

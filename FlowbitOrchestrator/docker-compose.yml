@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  langflow:
+    image: langflowai/langflow:latest
+    ports:
+      - "7860:7860"
+    environment:
+      - LANGFLOW_DEFAULT_FLOWS_PATH=/flows
+      - LANGFLOW_AUTO_LOGIN=true
+      - LANGFLOW_SUPERUSER_PASSWORD=admin123
+      - LANGFLOW_REDIS_URL=redis://redis:6379
+    volumes:
+      - ./flows:/flows:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

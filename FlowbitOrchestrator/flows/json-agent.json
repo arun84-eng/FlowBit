@@ -1,0 +1,118 @@
+{
+  "data": {
+    "nodes": [
+      {
+        "id": "TextInput-1",
+        "type": "TextInput",
+        "position": { "x": 100, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Text"],
+            "template": {
+              "value": {
+                "display_name": "JSON Data",
+                "value": "",
+                "type": "str"
+              }
+            },
+            "_type": "TextInput"
+          }
+        }
+      },
+      {
+        "id": "PythonFunction-1",
+        "type": "PythonFunction",
+        "position": { "x": 300, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Data"],
+            "template": {
+              "code": {
+                "display_name": "Code",
+                "value": "import json\nimport jsonschema\nfrom typing import Dict, Any\n\ndef validate_and_transform(json_data: str) -> Dict[str, Any]:\n    try:\n        data = json.loads(json_data)\n        \n        # Basic validation\n        if not isinstance(data, dict):\n            return {'error': 'Input must be a JSON object'}\n        \n        # Transform data\n        result = {\n            'valid': True,\n            'original_keys': list(data.keys()),\n            'key_count': len(data),\n            'transformed_data': {},\n            'metadata': {\n                'processed_at': str(datetime.now()),\n                'data_types': {}\n            }\n        }\n        \n        # Process each key-value pair\n        for key, value in data.items():\n            result['transformed_data'][key] = value\n            result['metadata']['data_types'][key] = type(value).__name__\n        \n        return result\n        \n    except json.JSONDecodeError as e:\n        return {\n            'valid': False,\n            'error': f'Invalid JSON: {str(e)}'\n        }\n    except Exception as e:\n        return {\n            'valid': False,\n            'error': f'Processing error: {str(e)}'\n        }",
+                "type": "code"
+              }
+            },
+            "_type": "PythonFunction"
+          }
+        }
+      },
+      {
+        "id": "PromptTemplate-1",
+        "type": "PromptTemplate",
+        "position": { "x": 500, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["BasePromptTemplate"],
+            "template": {
+              "template": {
+                "display_name": "Template",
+                "value": "Analyze the following JSON data transformation result:\n\n{transformation_result}\n\nProvide insights about:\n1. Data quality assessment\n2. Potential improvements\n3. Schema recommendations\n4. Data relationships\n\nFormat response as structured JSON.",
+                "type": "prompt"
+              }
+            },
+            "_type": "PromptTemplate"
+          }
+        }
+      },
+      {
+        "id": "OpenAI-1",
+        "type": "OpenAI",
+        "position": { "x": 500, "y": 300 },
+        "data": {
+          "node": {
+            "base_classes": ["BaseLanguageModel"],
+            "template": {
+              "model_name": {
+                "display_name": "Model Name",
+                "value": "gpt-3.5-turbo",
+                "type": "str"
+              }
+            },
+            "_type": "OpenAI"
+          }
+        }
+      },
+      {
+        "id": "LLMChain-1",
+        "type": "LLMChain",
+        "position": { "x": 700, "y": 100 },
+        "data": {
+          "node": {
+            "base_classes": ["Chain"],
+            "template": {},
+            "_type": "LLMChain"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "TextInput-1",
+        "target": "PythonFunction-1",
+        "sourceHandle": "text_output",
+        "targetHandle": "json_data"
+      },
+      {
+        "source": "PythonFunction-1",
+        "target": "PromptTemplate-1",
+        "sourceHandle": "result_output",
+        "targetHandle": "transformation_result"
+      },
+      {
+        "source": "PromptTemplate-1",
+        "target": "LLMChain-1",
+        "sourceHandle": "prompt_output",
+        "targetHandle": "prompt"
+      },
+      {
+        "source": "OpenAI-1",
+        "target": "LLMChain-1",
+        "sourceHandle": "llm_output",
+        "targetHandle": "llm"
+      }
+    ]
+  },
+  "description": "JSON data transformation and validation agent",
+  "name": "JSON Agent"
+}
